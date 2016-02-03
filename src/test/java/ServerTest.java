@@ -35,15 +35,15 @@ public class ServerTest {
         printWriter.println(correctPassword);
     }
 
+    private String getMessageFromServer() throws IOException {
+        return br.readLine();
+    }
+
     @Test
     public void loginWithSuccess() throws Exception {
         initializeConnection();
         sendUsernameAndPassword("correctUser", "correctPassword");
         assertEquals("Authentication succeed!", getMessageFromServer());
-    }
-
-    private String getMessageFromServer() throws IOException {
-        return br.readLine();
     }
 
     @Test
