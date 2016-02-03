@@ -10,25 +10,41 @@ import java.net.Socket;
 
 public class Server implements Runnable {
 
+    private BufferedReader bufferedReader;
+    private PrintWriter printWriter;
+    private Authenticator authenticator;
+    private ServerSocket serverSocket;
+
+    public void setAuthenticator(Authenticator authenticator) {
+        this.authenticator = authenticator;
+    }
+
     @Override
     public void run() {
         try {
-            ServerSocket serverSocket = new ServerSocket(5000);
-            System.out.println("Server started");
+            serverSocket = new ServerSocket(5000);
             while (true) {
-                Socket socket = serverSocket.accept();
-                BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                String user = br.readLine();
-                String password = br.readLine();
-                PrintWriter printWriter = new PrintWriter(socket.getOutputStream());
-                if ("correctUser".equals(user) && "correctPassword".equals(password))
-                    printWriter.println("Authentication succeed!");
-                else
-                    printWriter.println("Authentication succeed!");
-                printWriter.close();
+                startNewConnection();
+                checkUser();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    private void startNewConnection() throws IOException {
+        Socket socket = serverSocket.accept();
+        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        printWriter = new PrintWriter(socket.getOutputStream(), true);
+    }
+
+    private void checkUser() throws IOException {
+        String user = bufferedReader.readLine();
+        String password = bufferedReader.readLine();
+        if (authenticator.isCorrect(user, password))
+            printWriter.println("Authentication succeed!");
+        else
+            printWriter.println("Authentication failed!");
+    }
+
 }
