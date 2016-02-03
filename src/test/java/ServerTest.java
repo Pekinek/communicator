@@ -30,19 +30,26 @@ public class ServerTest {
         br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    @Test
-    public void loginWithSuccess() throws Exception {
-        initializeConnection();
-        printWriter.println("correctUser");
-        printWriter.println("correctPassword");
-        assertEquals("Authentication succeed!", br.readLine());
+    private void sendUsernameAndPassword(String correctUser, String correctPassword) {
+        printWriter.println(correctUser);
+        printWriter.println(correctPassword);
     }
 
     @Test
-    public void createServerAndLoginWithoutSuccess() throws Exception {
+    public void loginWithSuccess() throws Exception {
         initializeConnection();
-        printWriter.println("wrongUser");
-        printWriter.println("wrongPassword");
-        assertEquals("Authentication failed!", br.readLine());
+        sendUsernameAndPassword("correctUser", "correctPassword");
+        assertEquals("Authentication succeed!", getMessageFromServer());
+    }
+
+    private String getMessageFromServer() throws IOException {
+        return br.readLine();
+    }
+
+    @Test
+    public void LoginWithoutSuccess() throws Exception {
+        initializeConnection();
+        sendUsernameAndPassword("wrongUser", "wrongPassword");
+        assertEquals("Authentication failed!", getMessageFromServer());
     }
 }
