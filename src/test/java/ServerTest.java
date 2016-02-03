@@ -1,4 +1,5 @@
 import authenticators.BasicAuthenticator;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import server.Server;
@@ -24,7 +25,8 @@ public class ServerTest {
         t.start();
     }
 
-    private void initializeConnection() throws IOException {
+    @Before
+    public void initializeConnection() throws IOException {
         Socket socket = new Socket("127.0.0.1", 5000);
         printWriter = new PrintWriter(socket.getOutputStream(), true);
         br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -41,14 +43,12 @@ public class ServerTest {
 
     @Test
     public void loginWithSuccess() throws Exception {
-        initializeConnection();
         sendUsernameAndPassword("correctUser", "correctPassword");
         assertEquals("Authentication succeed!", getMessageFromServer());
     }
 
     @Test
     public void LoginWithoutSuccess() throws Exception {
-        initializeConnection();
         sendUsernameAndPassword("wrongUser", "wrongPassword");
         assertEquals("Authentication failed!", getMessageFromServer());
     }
