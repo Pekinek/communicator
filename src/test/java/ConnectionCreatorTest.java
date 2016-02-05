@@ -1,8 +1,10 @@
+import archivers.MockArchiver;
 import authenticators.BasicAuthenticator;
+import formatters.BasicFormatter;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import server.Server;
+import server.ConnectionCreator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,16 +14,19 @@ import java.net.Socket;
 
 import static org.junit.Assert.assertEquals;
 
-public class ServerTest {
+public class ConnectionCreatorTest {
 
     private PrintWriter printWriter;
     private BufferedReader br;
 
     @BeforeClass
     public static void initializeServer() {
-        Server server = new Server();
-        server.setAuthenticator(new BasicAuthenticator());
-        Thread t = new Thread(server);
+        ConnectionCreator connectionCreator = new ConnectionCreator();
+        connectionCreator.setAuthenticator(new BasicAuthenticator());
+        connectionCreator.setMessageFormatter(new BasicFormatter());
+        connectionCreator.setArchiver(new MockArchiver());
+
+        Thread t = new Thread(connectionCreator);
         t.start();
     }
 
@@ -32,9 +37,9 @@ public class ServerTest {
         br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    private void sendUsernameAndPassword(String correctUser, String correctPassword) {
-        printWriter.println(correctUser);
-        printWriter.println(correctPassword);
+    private void sendUsernameAndPassword(String user, String password) {
+        printWriter.println(user);
+        printWriter.println(password);
     }
 
     private String getMessageFromServer() throws IOException {
@@ -48,8 +53,18 @@ public class ServerTest {
     }
 
     @Test
-    public void LoginWithoutSuccess() throws Exception {
+    public void loginWithoutSuccess() throws Exception {
         sendUsernameAndPassword("wrongUser", "wrongPassword");
         assertEquals("Authentication failed!", getMessageFromServer());
+    }
+
+    @Test
+    public void sendMessageAndReceiveItBack() throws Exception {
+        sendUsernameAndPassword("correctUser", "correctPassword");
+        assertEquals("Authentication succeed!", getMessageFromServer());
+        String message = "Hello";
+        printWriter.println(message);
+        System.out.println("message sent");
+        assertEquals("correctUser: " + message, getMessageFromServer());
     }
 }
